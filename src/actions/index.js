@@ -1,7 +1,7 @@
 import axios from 'axios';
 import authService from 'services/auth-service';
 import axiosService from 'services/axios-service';
-import { FETCH_RENTAL_BY_ID_SUCCESS, FETCH_RENTAL_BY_ID_INIT, FETCH_RENTALS_SUCCESS, LOGIN_SUCCES, LOGIN_FAILURE, LOGOUT} from './types';
+import { FETCH_RENTAL_BY_ID_SUCCESS, FETCH_RENTAL_BY_ID_INIT, FETCH_RENTALS_SUCCESS, LOGIN_SUCCES, LOGIN_FAILURE, LOGOUT, FETCH_RENTALS_INIT, FETCH_RENTALS_FAIL} from './types';
 
 //Rentals Actions
 
@@ -27,15 +27,45 @@ const fetchRentalsSuccess = (rentals) => {
     }
 }
 
-export const fetchRentals = () => {
+const fetchRentalsInit = () => {
+    return {
+        type: FETCH_RENTALS_INIT
+    }
+}
 
+const fetchRentalsFail = (errors) => {
+    return {
+        type: FETCH_RENTALS_FAIL,
+        errors
+    }
+}
+
+export const fetchRentals = (city) => {
+
+    const url = city ? `/rentals?city=${city}` : '/rentals';
     return dispatch => {
-        axiosInstance.get('/rentals').then((res)=>{
+        dispatch(fetchRentalsInit());
+
+        axiosInstance.get(url).then((res)=>{
             return res.data
         }).then(rentals => {
             dispatch(fetchRentalsSuccess(rentals));
+        })
+        .catch(({response})=>{
+            dispatch(fetchRentalsFail(response.data.errors))
         });
     }
+}
+
+export const createRental = (rentalData) =>{
+    return axiosInstance.post('/rentals', {...rentalData}).then(
+        (res)=>{
+            return res.data;
+        },
+        (err)=>{
+            return Promise.reject(err.response.data.errors);
+        }
+    )
 }
 
 
@@ -71,8 +101,10 @@ export const register = (userData) =>{
 }
 
 const loginSuccess = () =>{
+    const username = authService.getUsername();
     return {
-        type: LOGIN_SUCCES
+        type: LOGIN_SUCCES,
+        username
     }
 }
 
