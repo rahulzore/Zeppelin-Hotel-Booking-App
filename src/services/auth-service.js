@@ -40,6 +40,10 @@ class AuthService {
         return false;
     }
 
+    getUsername(){
+        return this.decode(this.getToken()).username;
+    }
+
 }
 
 export default new AuthService();
