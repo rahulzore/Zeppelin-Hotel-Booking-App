@@ -31,20 +31,66 @@ router.get('', function (req, res) {
 
 });
 
-router.post('',UserController.authMiddleware, function(req,res){
-    const {title, city, street, category, image, shared, bedrooms, description, dailyRate} = req.body;
+router.post('', UserController.authMiddleware, function (req, res) {
+    const { title, city, street, category, image, shared, bedrooms, description, dailyRate } = req.body;
     const user = res.locals.user;
 
-    const rental = new Rental({title, city, street, category, image, shared, bedrooms, description, dailyRate});
+    const rental = new Rental({ title, city, street, category, image, shared, bedrooms, description, dailyRate });
     rental.user = user;
-    Rental.create(rental, function(err, newRental){
-        if(err){
+    Rental.create(rental, function (err, newRental) {
+        if (err) {
             return res.status(422).send({ errors: normalizeErrors(err.errors) });
         }
-        User.update({_id:user.id}, {$push: {rentals: newRental}}, function(){});
+        User.update({ _id: user.id }, { $push: { rentals: newRental } }, function () { });
         return res.json(newRental);
     })
 })
+
+router.get('/manage', UserController.authMiddleware, function(req, res){
+    const user = res.locals.user;
+
+    Rental.where({user})
+    .populate('bookings')
+    .exec(function(err, foundRentals){
+        if(err){
+            return res.status(422).send({ errors: normalizeErrors(err.errors) });
+        }
+
+        return res.json(foundRentals)
+    })
+})
+
+router.delete('/:id', UserController.authMiddleware, function (req, res) {
+    const user = res.locals.user;
+
+    Rental.findById(req.params.id)
+        .populate('user', '_id')
+        .populate({
+            path: 'bookings',
+            select: 'startAt',
+            match: { startAt: { $gt: new Date() } }
+        })
+        .exec(function (err, foundRental) {
+            if (err) {
+                return res.status(422).send({ errors: normalizeErrors(err.errors) });
+            }
+
+            if (user.id !== foundRental.user.id) {
+                return res.status(422).send({ errors: [{ title: 'Invalid User!', detail: 'You are not rental owner!' }] });
+            }
+
+            if (foundRental.bookings.length > 0) {
+                return res.status(422).send({ errors: [{ title: 'Active Bookings!', detail: 'Cannot delete rentals with active bookings!' }] });
+            }
+
+            foundRental.remove(function (err) {
+                if (err) {
+                    return res.status(422).send({ errors: normalizeErrors(err.errors) });
+                }
+                return res.json({ 'status': 'deleted!' })
+            });
+        });
+});
 
 router.get('/:id', function (req, res) {
     const rentalId = req.params.id;
