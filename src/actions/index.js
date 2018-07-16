@@ -1,7 +1,17 @@
 import axios from 'axios';
 import authService from 'services/auth-service';
 import axiosService from 'services/axios-service';
-import { FETCH_RENTAL_BY_ID_SUCCESS, FETCH_RENTAL_BY_ID_INIT, FETCH_RENTALS_SUCCESS, LOGIN_SUCCES, LOGIN_FAILURE, LOGOUT, FETCH_RENTALS_INIT, FETCH_RENTALS_FAIL} from './types';
+import { FETCH_RENTAL_BY_ID_SUCCESS, 
+         FETCH_RENTAL_BY_ID_INIT, 
+         FETCH_RENTALS_SUCCESS, 
+         LOGIN_SUCCES, 
+         LOGIN_FAILURE, 
+         LOGOUT, 
+         FETCH_RENTALS_INIT, 
+         FETCH_RENTALS_FAIL,
+         FETCH_USER_BOOKINGS_INIT,
+         FETCH_USER_BOOKINGS_SUCCESS,
+         FETCH_USER_BOOKINGS_FAIL} from './types';
 
 //Rentals Actions
 
@@ -85,6 +95,63 @@ export const fetchRentalById = (rentalID) => {
         })
         
     }
+}
+
+// USER BOOKINGS ACTIONS
+
+const fetchUserBookingInit = () => {
+    return {
+        type: FETCH_USER_BOOKINGS_INIT
+    }
+}
+
+const fetchUserBookingSuccess = (userBookings) => {
+    return {
+        type: FETCH_USER_BOOKINGS_SUCCESS,
+        userBookings
+    }
+}
+
+const fetchUserBookingFail = (errors) => {
+    return {
+        type: FETCH_USER_BOOKINGS_FAIL,
+        errors
+    }
+}
+
+export const fetchUserBookings = () => {
+    return dispatch => {
+        dispatch(fetchUserBookingInit());
+
+        axiosInstance.get('/bookings/manage').then((res)=>{
+            return res.data
+        }).then(userBookings => {
+            dispatch(fetchUserBookingSuccess(userBookings));
+        })
+        .catch(({response})=>{
+            dispatch(fetchUserBookingFail(response.data.errors))
+        });
+    }
+}
+
+//USER RENTALS actions
+
+export const getUserRentals = () =>{
+    return axiosInstance.get('/rentals/manage').then(
+        (res)=>{
+            return res.data;
+        },
+        (err)=>{
+            return Promise.reject(err.response.data.errors);
+        }
+    )
+}
+
+export const deleteRental = (rentalId) => {
+    return axiosInstance.delete(`/rentals/${rentalId}`).then(
+        res => res.data,
+        err => Promise.reject(err.response.data.errors)
+    )
 }
 
 //AUTH Actions

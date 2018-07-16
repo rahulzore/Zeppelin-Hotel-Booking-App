@@ -1,0 +1,69 @@
+#userRentals {
+
+  .toBeDeleted{
+    border-color: red;
+  }
+
+    .card {
+      margin-bottom: 20px;
+    }
+  
+    .card-block {
+      padding: 20px;
+    }
+  
+    .card-title {
+      font-size: 20px;
+    }
+  
+    .btn-bwm {
+      font-size: 14px;
+      color: white;
+      padding: 10px 15px;
+    }
+  
+    .card-footer {
+      font-size: 14px;
+    }
+  
+    .btn-bookings {
+      border-color: $main-color;
+      background-color: transparent;
+      color: $main-color;
+  
+      &:hover, &:focus {
+        border-color: $main-color !important;
+        background-color: transparent !important;
+        color: $main-color !important;
+      }
+    }
+
+    .delete-menu{
+      margin-top: 5px;
+    }
+  
+    .btn-danger, .btn-success{
+      margin-left: 10px;
+      font-size: 14px;
+    }
+
+    .btn-bwm {
+      margin-right: 10px;
+    }
+  }
+  
+  .rental-booking-modal {
+    .btn-bwm {
+    font-size: 14px;
+    color: white;
+    padding: 10px 15px;
+    }
+  
+    .bookings-inner-container {
+      p {
+        font-size: 14px;
+        margin-bottom: 0px;
+      }
+    }
+  }
+  
